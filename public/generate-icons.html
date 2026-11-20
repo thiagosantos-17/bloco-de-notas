@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerar Ícones PWA</title>
+  <style>
+    body { font-family: system-ui; max-width: 800px; margin: 2rem auto; padding: 1rem; }
+    .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .icon-item { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; text-align: center; }
+    .icon-item canvas { border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    button { padding: 0.75rem 1.5rem; font-size: 1rem; background: #0ea5e9; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #0284c7; }
+  </style>
+</head>
+<body>
+  <h1>Gerador de Ícones PWA</h1>
+  <p>Clique no botão abaixo para gerar todos os ícones necessários e baixá-los como PNG.</p>
+  <button id="generate">Gerar e Baixar Todos os Ícones</button>
+  <div class="icon-grid" id="grid"></div>
+
+  <script>
+    const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+    const grid = document.getElementById('grid');
+
+    function drawIcon(ctx, size) {
+      const radius = size * 0.16;
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#0ea5e9');
+      gradient.addColorStop(1, '#0369a1');
+
+      // Background
+      ctx.fillStyle = gradient;
+      roundRect(ctx, 0, 0, size, size, radius);
+      ctx.fill();
+
+      // Lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+      ctx.lineWidth = size * 0.06;
+      ctx.lineCap = 'round';
+
+      const padding = size * 0.25;
+      const lineWidth = size * 0.5;
+      const lineHeight = size * 0.08;
+      const gap = size * 0.08;
+
+      // Line 1 (full)
+      ctx.beginPath();
+      ctx.moveTo(padding, padding + lineHeight * 0.5);
+      ctx.lineTo(padding + lineWidth, padding + lineHeight * 0.5);
+      ctx.stroke();
+
+      // Line 2 (full)
+      ctx.beginPath();
+      ctx.moveTo(padding, padding + lineHeight * 1.5 + gap);
+      ctx.lineTo(padding + lineWidth, padding + lineHeight * 1.5 + gap);
+      ctx.stroke();
+
+      // Line 3 (70%)
+      ctx.beginPath();
+      ctx.moveTo(padding, padding + lineHeight * 2.5 + gap * 2);
+      ctx.lineTo(padding + lineWidth * 0.7, padding + lineHeight * 2.5 + gap * 2);
+      ctx.stroke();
+
+      // Line 4 (40%)
+      ctx.beginPath();
+      ctx.moveTo(padding, padding + lineHeight * 3.5 + gap * 3);
+      ctx.lineTo(padding + lineWidth * 0.4, padding + lineHeight * 3.5 + gap * 3);
+      ctx.stroke();
+
+      // Border
+      ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+      ctx.lineWidth = size * 0.03;
+      roundRect(ctx, 0, 0, size, size, radius);
+      ctx.stroke();
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function createIconCanvas(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      drawIcon(ctx, size);
+      return canvas;
+    }
+
+    function downloadCanvas(canvas, filename) {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    document.getElementById('generate').addEventListener('click', () => {
+      grid.innerHTML = '';
+      sizes.forEach(size => {
+        const canvas = createIconCanvas(size);
+        const item = document.createElement('div');
+        item.className = 'icon-item';
+        item.innerHTML = `<div>${size}x${size}</div>`;
+        item.appendChild(canvas);
+        grid.appendChild(item);
+        downloadCanvas(canvas, `icon-${size}.png`);
+      });
+      alert('Ícones gerados e baixados! Mova os arquivos PNG para a pasta public/');
+    });
+
+    // Preview on load
+    sizes.forEach(size => {
+      const canvas = createIconCanvas(size);
+      const item = document.createElement('div');
+      item.className = 'icon-item';
+      item.innerHTML = `<div>${size}x${size}</div>`;
+      item.appendChild(canvas);
+      grid.appendChild(item);
+    });
+  </script>
+</body>
+</html>
